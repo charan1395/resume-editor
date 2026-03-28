@@ -52,6 +52,8 @@ async function initApp() {
 
 export const handler = async (event: any, context: any) => {
   await initApp();
-  const serverlessHandler = serverless(app);
+  const serverlessHandler = serverless(app, {
+    binary: ['multipart/form-data', 'application/octet-stream', '*/*']
+  });
   return serverlessHandler(event, context);
 };
