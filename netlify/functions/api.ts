@@ -27,13 +27,6 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
-// Strip the /api prefix added by Netlify redirect
-app.use((req: Request, _res: Response, next: NextFunction) => {
-  if (req.path.startsWith("/api/")) {
-    req.url = req.url.replace(/^\/api/, "");
-  }
-  next();
-});
 
 let initialized = false;
 
