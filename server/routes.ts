@@ -13,26 +13,6 @@ import { log } from "./index";
 
 const UPLOAD_DIR = path.join("/tmp", "docx-sessions");
 const LOCKED_BLOCKS: string[] = [];
-
-if (!fs.existsSync(UPLOAD_DIR)) {
-  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-}
-
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 },
-  fileFilter: (_req, file, cb) => {
-    if (
-      file.mimetype === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
-      file.originalname.endsWith(".docx")
-    ) {
-      cb(null, true);
-    } else {
-      cb(new Error("Only .docx files are allowed"));
-    }
-  },
-});
-
 const sessionCache = new Map<string, { filePath: string; fileName: string }>();
 
 const editBodySchema = z.object({
@@ -49,6 +29,27 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+
+  if (!fs.existsSync(UPLOAD_DIR)) {
+    fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+  }
+
+  const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 10 * 1024 * 1024 },
+    fileFilter: (_req, file, cb) => {
+      if (
+        file.mimetype === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+        file.originalname.endsWith(".docx")
+      ) {
+        cb(null, true);
+      } else {
+        cb(new Error("Only .docx files are allowed"));
+      }
+    },
+  });
+
+
   app.post("/api/upload", upload.single("file"), async (req, res) => {
     try {
       if (!req.file) {
@@ -314,7 +315,7 @@ export async function registerRoutes(
   });
 
   // ============================================================
-  // ONE-SHOT GENERATE API — Claude Code calls this directly
+  // ONE-SHOT GENERATE API â Claude Code calls this directly
   // POST /api/generate
   // Body: { replacements: { TECHNICAL_SKILLS: "...", WELLS_FARGO_POINTS: "...", ... } }
   // Uses the stored master template on the server
